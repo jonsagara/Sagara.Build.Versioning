@@ -80,7 +80,7 @@ jobs:
 
     # Create the NuGet package in the folder from the environment variable NuGetDirectory
     - name: dotnet pack Sagara.Build.Versioning
-      run: dotnet pack ./src/Sagara.Build.Versioning/Sagara.Build.Versioning.csproj --configuration Release --output "$env:NuGetDirectory" -p:OfficialBuildId="$env:OfficialBuildId" -p:ContinuousIntegrationBuild=true
+      run: dotnet pack ./src/Sagara.Build.Versioning/Sagara.Build.Versioning.csproj --configuration Release --output "$env:NuGetDirectory" -p:OfficialBuildId="$env:OfficialBuildId"
 
     # Upload .nupkg files as an artifact, so they can be used in the following jobs
     - name: Upload NuGet packages as artifacts
