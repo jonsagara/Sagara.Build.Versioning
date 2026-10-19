@@ -1,0 +1,54 @@
+<Project>
+
+	<!--
+		Sagara.Build.Versioning: validation.
+
+		The version properties themselves are computed in core/Sagara.Build.Versioning.Versioning.targets. That
+		file only flags invalid input; this target turns the flags into build errors.
+
+		GetAssemblyVersion runs in each per-framework (inner) build; GenerateNuspec runs in the outer build of a
+		multi-targeted project during pack. Hooking both covers build and pack for single- and multi-targeted
+		projects.
+	-->
+
+	<Target Name="_SagaraValidateVersioning" BeforeTargets="GetAssemblyVersion;GenerateNuspec">
+
+		<Error Code="SBV0001"
+			   Condition="'$(_SbvHookImported)' != 'true'"
+			   Text="Sagara.Build.Versioning: the versioning file was not imported. Something reassigned BeforeMicrosoftNETSdkTargets instead of appending to it. Use &lt;BeforeMicrosoftNETSdkTargets&gt;%24(BeforeMicrosoftNETSdkTargets);your.targets&lt;/BeforeMicrosoftNETSdkTargets&gt;." />
+
+		<Error Code="SBV0002"
+			   Condition="'$(_SbvHookImported)' == 'true' and '$(VersionPrefix)' == ''"
+			   Text="Sagara.Build.Versioning: VersionPrefix is required, e.g. &lt;VersionPrefix&gt;1.0.3&lt;/VersionPrefix&gt; in Directory.Build.props." />
+
+		<Error Code="SBV0003"
+			   Condition="'$(VersionPrefix)' != '' and '$(_SbvPrefixValid)' != 'true'"
+			   Text="Sagara.Build.Versioning: VersionPrefix '$(VersionPrefix)' must be Major.Minor.Patch with no leading zeros and no prerelease label, e.g. 1.0.3. Use PrereleaseLabel and PreviewNumber for prereleases." />
+
+		<Error Code="SBV0004"
+			   Condition="'$(_SbvPrefixValid)' == 'true' and '$(_SbvPrefixInRange)' != 'true'"
+			   Text="Sagara.Build.Versioning: VersionPrefix '$(VersionPrefix)' is out of range. Major and Minor must be at most 65534, and Patch at most 654 (FileVersion stores Patch*100 + yy in a 16-bit field)." />
+
+		<Error Code="SBV0005"
+			   Condition="'$(_SbvIsPrerelease)' == 'true' and '$(_SbvPreviewNumberValid)' != 'true'"
+			   Text="Sagara.Build.Versioning: PreviewNumber '$(PreviewNumber)' must be a positive integer. Leave it empty for a stable release." />
+
+		<Error Code="SBV0006"
+			   Condition="'$(_SbvIsPrerelease)' == 'true' and '$(_SbvLabelValid)' != 'true'"
+			   Text="Sagara.Build.Versioning: PrereleaseLabel '$(_SbvLabel)' must be alpha, beta, preview, or rc (lowercase). Put the number in PreviewNumber, e.g. PrereleaseLabel=rc + PreviewNumber=1 gives rc.1." />
+
+		<Error Code="SBV0007"
+			   Condition="'$(_SbvIsOfficialBuild)' == 'true' and '$(_SbvBuildIdValid)' != 'true'"
+			   Text="Sagara.Build.Versioning: OfficialBuildId '$(OfficialBuildId)' must be yyyyMMdd.N, where N is 1-99, e.g. 20261016.3." />
+
+		<Error Code="SBV0008"
+			   Condition="'$(_SbvBuildIdValid)' == 'true' and '$(_SbvIsOfficialBuild)' == 'true' and '$(_SbvBuildIdInRange)' != 'true'"
+			   Text="Sagara.Build.Versioning: OfficialBuildId '$(OfficialBuildId)' has an invalid month or day." />
+
+		<Warning Code="SBV1001"
+				 Condition="'$(_SbvExplicitOverrides)' != ''"
+				 Text="Sagara.Build.Versioning: explicitly set $(_SbvExplicitOverrides.Replace(';', ', ')) overrides the computed value. Remove it and use VersionPrefix, PrereleaseLabel, and PreviewNumber instead." />
+
+	</Target>
+
+</Project>

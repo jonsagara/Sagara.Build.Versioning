@@ -1,0 +1,22 @@
+<Project>
+
+	<!-- This repo versions itself with its own scheme by importing the build files by path. -->
+	<Import Project="src\Sagara.Build.Versioning\build\Sagara.Build.Versioning.props" />
+
+	<PropertyGroup>
+
+		<!-- Versioning: see src/Sagara.Build.Versioning/README.md -->
+		<VersionPrefix>1.0.0</VersionPrefix>
+		<!-- <PrereleaseLabel>preview</PrereleaseLabel> -->
+		<!-- <PreviewNumber>1</PreviewNumber> -->
+
+		<!-- NuGet -->
+		<Authors>Jon Sagara</Authors>
+		<Copyright>Copyright 2026</Copyright>
+		<RepositoryUrl>https://github.com/jonsagara/Sagara.Build.Versioning</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageProjectUrl>https://github.com/jonsagara/Sagara.Build.Versioning</PackageProjectUrl>
+
+	</PropertyGroup>
+
+</Project>

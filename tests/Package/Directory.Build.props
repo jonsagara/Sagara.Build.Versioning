@@ -1,0 +1,12 @@
+<Project>
+
+	<!--
+		Fixture that consumes the packed .nupkg through GlobalPackageReference, exactly like a real consumer.
+		Stops the search for Directory.Build.props here, so the repo root file is not used.
+	-->
+	<PropertyGroup>
+		<!-- Default so the fixture builds; Verify-Versioning.ps1 overrides it. -->
+		<VersionPrefix>1.0.3</VersionPrefix>
+	</PropertyGroup>
+
+</Project>

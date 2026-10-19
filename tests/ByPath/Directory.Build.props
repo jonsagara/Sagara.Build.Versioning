@@ -1,0 +1,14 @@
+<Project>
+
+	<!--
+		Fixture that imports the build files by path, so changes can be tested without packing.
+		Stops the search for Directory.Build.props here, so the repo root file is not used.
+	-->
+	<Import Project="..\..\src\Sagara.Build.Versioning\build\Sagara.Build.Versioning.props" />
+
+	<PropertyGroup>
+		<!-- Default so the fixture builds in the solution; Verify-Versioning.ps1 overrides it. -->
+		<VersionPrefix>1.0.3</VersionPrefix>
+	</PropertyGroup>
+
+</Project>

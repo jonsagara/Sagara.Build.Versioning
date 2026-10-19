@@ -1,0 +1,86 @@
+<Project>
+
+	<!--
+		Sagara.Build.Versioning: version computation.
+
+		Imported through $(BeforeMicrosoftNETSdkTargets) (see build/Sagara.Build.Versioning.props), which runs
+		after Directory.Build.props and the project body, but before Microsoft.NET.DefaultAssemblyInfo.targets.
+
+		Inputs:
+			VersionPrefix     Required. Major.Minor.Patch, e.g. 1.0.3.
+			PrereleaseLabel   alpha | beta | preview | rc. Default: preview. Ignored when PreviewNumber is empty.
+			PreviewNumber     Positive integer. Empty means a stable release.
+			OfficialBuildId   yyyyMMdd.N, set by CI. Empty means a local build.
+
+		Outputs (each one only if not already set):
+			VersionSuffix     $(PrereleaseLabel).$(PreviewNumber) for prereleases. The SDK then sets Version and
+			                  PackageVersion to $(VersionPrefix)-$(VersionSuffix).
+			AssemblyVersion   Major.Minor.0.0
+			FileVersion       CI:    Major.Minor.(Patch*100 + yy).((MM*50 + dd)*100 + N)
+			                  Local: Major.Minor.(Patch*100).0
+
+		Everything here is static evaluation. Invalid input is never parsed; instead it is flagged, and the
+		_SagaraValidateVersioning target (build/Sagara.Build.Versioning.targets) reports it as an error.
+	-->
+
+	<PropertyGroup>
+		<_SbvHookImported>true</_SbvHookImported>
+
+		<!-- Record explicit overrides before we set anything ourselves. -->
+		<_SbvExplicitOverrides></_SbvExplicitOverrides>
+		<_SbvExplicitOverrides Condition="'$(Version)' != ''">$(_SbvExplicitOverrides);Version</_SbvExplicitOverrides>
+		<_SbvExplicitOverrides Condition="'$(PackageVersion)' != ''">$(_SbvExplicitOverrides);PackageVersion</_SbvExplicitOverrides>
+		<_SbvExplicitOverrides Condition="'$(VersionSuffix)' != ''">$(_SbvExplicitOverrides);VersionSuffix</_SbvExplicitOverrides>
+		<_SbvExplicitOverrides Condition="'$(AssemblyVersion)' != ''">$(_SbvExplicitOverrides);AssemblyVersion</_SbvExplicitOverrides>
+		<_SbvExplicitOverrides Condition="'$(FileVersion)' != ''">$(_SbvExplicitOverrides);FileVersion</_SbvExplicitOverrides>
+		<_SbvExplicitOverrides>$(_SbvExplicitOverrides.TrimStart(';'))</_SbvExplicitOverrides>
+
+		<!-- Use an internal copy: an empty global property (-p:PrereleaseLabel=) cannot be overridden with a default. -->
+		<_SbvLabel>$(PrereleaseLabel)</_SbvLabel>
+		<_SbvLabel Condition="'$(_SbvLabel)' == ''">preview</_SbvLabel>
+
+		<!-- VersionPrefix: strict Major.Minor.Patch, no leading zeros. -->
+		<_SbvPrefixValid>$([System.Text.RegularExpressions.Regex]::IsMatch('$(VersionPrefix)', '^(0|[1-9][0-9]{0,4})\.(0|[1-9][0-9]{0,4})\.(0|[1-9][0-9]{0,2})$'))</_SbvPrefixValid>
+
+		<!-- Prerelease inputs. -->
+		<_SbvIsPrerelease>false</_SbvIsPrerelease>
+		<_SbvIsPrerelease Condition="'$(PreviewNumber)' != ''">true</_SbvIsPrerelease>
+		<_SbvPreviewNumberValid>$([System.Text.RegularExpressions.Regex]::IsMatch('$(PreviewNumber)', '^[1-9][0-9]{0,8}$'))</_SbvPreviewNumberValid>
+		<_SbvLabelValid>$([System.Text.RegularExpressions.Regex]::IsMatch('$(_SbvLabel)', '^(alpha|beta|preview|rc)$'))</_SbvLabelValid>
+
+		<!-- OfficialBuildId: yyyyMMdd.N, N = 1..99. -->
+		<_SbvIsOfficialBuild>false</_SbvIsOfficialBuild>
+		<_SbvIsOfficialBuild Condition="'$(OfficialBuildId)' != ''">true</_SbvIsOfficialBuild>
+		<_SbvBuildIdValid>$([System.Text.RegularExpressions.Regex]::IsMatch('$(OfficialBuildId)', '^[0-9]{8}\.[1-9][0-9]?$'))</_SbvBuildIdValid>
+	</PropertyGroup>
+
+	<!-- Split VersionPrefix and check ranges. AssemblyVersion parts max out at 65534; Patch*100+99 must fit in 65535. -->
+	<PropertyGroup Condition="'$(_SbvPrefixValid)' == 'true'">
+		<_SbvMajor>$([System.Version]::Parse('$(VersionPrefix)').Major)</_SbvMajor>
+		<_SbvMinor>$([System.Version]::Parse('$(VersionPrefix)').Minor)</_SbvMinor>
+		<_SbvPatch>$([System.Version]::Parse('$(VersionPrefix)').Build)</_SbvPatch>
+		<_SbvPrefixInRange>false</_SbvPrefixInRange>
+		<_SbvPrefixInRange Condition="$(_SbvMajor) &lt;= 65534 and $(_SbvMinor) &lt;= 65534 and $(_SbvPatch) &lt;= 654">true</_SbvPrefixInRange>
+	</PropertyGroup>
+
+	<!-- Split OfficialBuildId and check ranges. -->
+	<PropertyGroup Condition="'$(_SbvIsOfficialBuild)' == 'true' and '$(_SbvBuildIdValid)' == 'true'">
+		<_SbvBuildYY>$([MSBuild]::Modulo($([MSBuild]::Add($(OfficialBuildId.Substring(0, 4)), 0)), 100))</_SbvBuildYY>
+		<_SbvBuildMM>$([MSBuild]::Add($(OfficialBuildId.Substring(4, 2)), 0))</_SbvBuildMM>
+		<_SbvBuildDD>$([MSBuild]::Add($(OfficialBuildId.Substring(6, 2)), 0))</_SbvBuildDD>
+		<_SbvBuildN>$([MSBuild]::Add($(OfficialBuildId.Substring(9)), 0))</_SbvBuildN>
+		<_SbvBuildIdInRange>false</_SbvBuildIdInRange>
+		<_SbvBuildIdInRange Condition="$(_SbvBuildMM) &gt;= 1 and $(_SbvBuildMM) &lt;= 12 and $(_SbvBuildDD) &gt;= 1 and $(_SbvBuildDD) &lt;= 31">true</_SbvBuildIdInRange>
+	</PropertyGroup>
+
+	<!-- Outputs. -->
+	<PropertyGroup Condition="'$(_SbvPrefixValid)' == 'true' and '$(_SbvPrefixInRange)' == 'true'">
+		<VersionSuffix Condition="'$(VersionSuffix)' == '' and '$(_SbvIsPrerelease)' == 'true' and '$(_SbvPreviewNumberValid)' == 'true' and '$(_SbvLabelValid)' == 'true'">$(_SbvLabel).$(PreviewNumber)</VersionSuffix>
+
+		<AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$(_SbvMajor).$(_SbvMinor).0.0</AssemblyVersion>
+
+		<FileVersion Condition="'$(FileVersion)' == '' and '$(_SbvIsOfficialBuild)' == 'true' and '$(_SbvBuildIdValid)' == 'true' and '$(_SbvBuildIdInRange)' == 'true'">$(_SbvMajor).$(_SbvMinor).$([MSBuild]::Add($([MSBuild]::Multiply($(_SbvPatch), 100)), $(_SbvBuildYY))).$([MSBuild]::Add($([MSBuild]::Multiply($([MSBuild]::Add($([MSBuild]::Multiply($(_SbvBuildMM), 50)), $(_SbvBuildDD))), 100)), $(_SbvBuildN)))</FileVersion>
+		<FileVersion Condition="'$(FileVersion)' == '' and '$(_SbvIsOfficialBuild)' != 'true'">$(_SbvMajor).$(_SbvMinor).$([MSBuild]::Multiply($(_SbvPatch), 100)).0</FileVersion>
+	</PropertyGroup>
+
+</Project>

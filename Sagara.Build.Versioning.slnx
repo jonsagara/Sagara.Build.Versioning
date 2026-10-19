@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Sagara.Build.Versioning/Sagara.Build.Versioning.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ByPath/ByPathFixture.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,12 @@
+<Project>
+
+	<PropertyGroup>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- Verify-Versioning.ps1 packs the package with this exact version into tests/artifacts/feed. -->
+		<GlobalPackageReference Include="Sagara.Build.Versioning" Version="0.0.1-alpha.1" />
+	</ItemGroup>
+
+</Project>

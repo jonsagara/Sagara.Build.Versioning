@@ -1,0 +1,9 @@
+<Project>
+
+	<!--
+		Imported by NuGet in the outer (cross-targeting) build of a multi-targeted project, where build/ assets
+		are not imported. Pack runs in the outer build, so PackageVersion must be computed here too.
+	-->
+	<Import Project="..\build\Sagara.Build.Versioning.props" />
+
+</Project>

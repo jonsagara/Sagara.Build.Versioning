@@ -1,0 +1,6 @@
+<Project>
+
+	<!-- See Sagara.Build.Versioning.props in this folder. -->
+	<Import Project="..\build\Sagara.Build.Versioning.targets" />
+
+</Project>

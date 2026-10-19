@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<!-- Pack requires a target framework, but this package contains no assemblies. -->
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+
+		<!-- NuGet -->
+		<PackageId>Sagara.Build.Versioning</PackageId>
+		<Description>MSBuild-only package that versions your projects the way the .NET SDK does: NuGet Version from VersionPrefix/PrereleaseLabel/PreviewNumber, AssemblyVersion Major.Minor.0.0, and a date-stamped FileVersion in CI. Reference it with GlobalPackageReference.</Description>
+		<PackageTags>msbuild versioning version fileversion assemblyversion semver</PackageTags>
+		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<IncludeBuildOutput>false</IncludeBuildOutput>
+		<DevelopmentDependency>true</DevelopmentDependency>
+		<SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+		<!-- NU5128: no lib/ or ref/ folder is intentional; this package only has build assets. -->
+		<NoWarn>$(NoWarn);NU5128</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="build\**" Pack="true" PackagePath="build\" />
+		<None Include="buildMultiTargeting\**" Pack="true" PackagePath="buildMultiTargeting\" />
+		<None Include="core\**" Pack="true" PackagePath="core\" />
+		<None Include="..\..\LICENSE.md" Pack="true" PackagePath="" />
+		<None Include=".\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+</Project>

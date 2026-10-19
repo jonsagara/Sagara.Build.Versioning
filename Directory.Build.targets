@@ -1,0 +1,5 @@
+<Project>
+
+	<Import Project="src\Sagara.Build.Versioning\build\Sagara.Build.Versioning.targets" />
+
+</Project>

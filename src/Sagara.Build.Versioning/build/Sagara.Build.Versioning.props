@@ -1,0 +1,21 @@
+<Project>
+
+	<!--
+		Sagara.Build.Versioning
+
+		This file is imported very early (via nuget.g.props), before the project body has been evaluated, so it
+		must not read any versioning properties. Its only job is to register the file that does the real work
+		so that MSBuild imports it at the right time.
+
+		Microsoft.NET.Sdk's Sdk.targets imports $(BeforeMicrosoftNETSdkTargets) AFTER Directory.Build.props and
+		the project body, but BEFORE Microsoft.NET.DefaultAssemblyInfo.targets computes Version from
+		VersionPrefix/VersionSuffix. That lets us compute everything with static property evaluation.
+	-->
+
+	<PropertyGroup Condition="'$(_SagaraBuildVersioningImported)' != 'true'">
+		<_SagaraBuildVersioningImported>true</_SagaraBuildVersioningImported>
+		<_SagaraBuildVersioningHookFile>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..', 'core', 'Sagara.Build.Versioning.Versioning.targets'))</_SagaraBuildVersioningHookFile>
+		<BeforeMicrosoftNETSdkTargets>$(BeforeMicrosoftNETSdkTargets);$(_SagaraBuildVersioningHookFile)</BeforeMicrosoftNETSdkTargets>
+	</PropertyGroup>
+
+</Project>
